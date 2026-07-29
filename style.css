@@ -294,3 +294,44 @@ body {
     border-radius: 8px;
     outline: 2px dashed #4f46e5;
 }
+/* Responsive Styles & UI Enhancements */
+.task-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 992px) {
+    .board {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box__input, .filter-box__select, .btn {
+        width: 100%;
+    }
+
+    .board {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .modal__content {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+}
