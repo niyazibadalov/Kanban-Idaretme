@@ -1,5 +1,6 @@
 
-let tasks = [
+// localStorage-dən data oxunur, yoxdursa standart ilkin data götürülür
+let tasks = JSON.parse(localStorage.getItem('kanban_tasks')) || [
     {
         id: "1",
         title: "DevJoint 1",
@@ -15,6 +16,11 @@ let tasks = [
         status: "done"
     }
 ];
+
+// localStorage-ə data yazmaq üçün köməkçi funksiya
+function saveTasksToLocalStorage() {
+    localStorage.setItem('kanban_tasks', JSON.stringify(tasks));
+}
 
 // DOM Elementləri
 const tasksTodo = document.getElementById('tasks-todo');
@@ -64,7 +70,7 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
 
-// Form göndərilməsi
+// Form göndərilməsi 
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -93,6 +99,7 @@ taskForm.addEventListener('submit', (e) => {
         tasks.push(newTask);
     }
 
+    saveTasksToLocalStorage(); 
     renderTasks();
     closeModal();
 });
@@ -101,6 +108,7 @@ taskForm.addEventListener('submit', (e) => {
 function deleteTask(id) {
     if (confirm('Bu tapşırığı silmək istədiyinizdən əminsiniz?')) {
         tasks = tasks.filter(task => task.id !== id);
+        saveTasksToLocalStorage(); 
         renderTasks();
     }
 }
@@ -131,6 +139,7 @@ function setupDragAndDrop() {
 
             if (draggedTask && draggedTask.status !== status) {
                 draggedTask.status = status;
+                saveTasksToLocalStorage(); 
                 renderTasks();
             }
         });
@@ -171,12 +180,13 @@ function renderTasks() {
     countDone.textContent = doneCount;
 }
 
-// Kart yaradılması və Drag
+// Kart yaradılması
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = 'task-card';
     card.dataset.id = task.id;
-    card.setAttribute('draggable', 'true'); 
+    card.setAttribute('draggable', 'true');
+
     const priorityText = {
         low: 'Aşağı',
         medium: 'Orta',
@@ -195,7 +205,6 @@ function createTaskCard(task) {
         </div>
     `;
 
-    // Kart Drag Start & End hadisələri
     card.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', task.id);
         card.classList.add('dragging');
