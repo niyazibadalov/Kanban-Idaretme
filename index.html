@@ -8,6 +8,7 @@
 </head>
 <body>
 
+    <!-- Top Header & Controls -->
     <header class="header">
         <div class="header__logo">
             <span class="header__logo-icon">K</span>
@@ -29,7 +30,9 @@
         </div>
     </header>
 
+    <!-- Kanban Board -->
     <main class="board">
+        <!-- Column 1: Todo -->
         <div class="column" data-status="todo">
             <div class="column__header">
                 <div class="column__title-wrap">
@@ -41,6 +44,7 @@
             <div class="column__tasks" id="tasks-todo"></div>
         </div>
 
+        <!-- Column 2: In Progress -->
         <div class="column" data-status="in-progress">
             <div class="column__header">
                 <div class="column__title-wrap">
@@ -52,6 +56,7 @@
             <div class="column__tasks" id="tasks-in-progress"></div>
         </div>
 
+        <!-- Column 3: Done -->
         <div class="column" data-status="done">
             <div class="column__header">
                 <div class="column__title-wrap">
@@ -63,6 +68,40 @@
             <div class="column__tasks" id="tasks-done"></div>
         </div>
     </main>
+
+    <!-- Modal (Əlavə et / Redaktə et) -->
+    <div id="task-modal" class="modal">
+        <div class="modal__content">
+            <h2 id="modal-title" class="modal__title">Yeni Tapşırıq</h2>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                
+                <div class="form-group">
+                    <label for="task-title-input" class="form-label">Başlıq *</label>
+                    <input type="text" id="task-title-input" class="form-control" placeholder="Məsl. API inteqrasiyası" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-desc-input" class="form-label">Açıqlama</label>
+                    <textarea id="task-desc-input" class="form-control" rows="3" placeholder="Tapşırıq haqqında qısa qeyd..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-priority-input" class="form-label">Prioritet dərəcəsi</label>
+                    <select id="task-priority-input" class="form-control">
+                        <option value="low">Aşağı (Low)</option>
+                        <option value="medium">Orta (Medium)</option>
+                        <option value="high">Yüksək (High)</option>
+                    </select>
+                </div>
+
+                <div class="modal__actions">
+                    <button type="button" id="close-modal-btn" class="btn btn--secondary">Ləğv et</button>
+                    <button type="submit" class="btn btn--primary">Yadda saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
