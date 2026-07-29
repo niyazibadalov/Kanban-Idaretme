@@ -1,5 +1,4 @@
 
-// localStorage-dən data oxunur, yoxdursa standart ilkin data götürülür
 let tasks = JSON.parse(localStorage.getItem('kanban_tasks')) || [
     {
         id: "1",
@@ -17,7 +16,6 @@ let tasks = JSON.parse(localStorage.getItem('kanban_tasks')) || [
     }
 ];
 
-// localStorage-ə data yazmaq üçün köməkçi funksiya
 function saveTasksToLocalStorage() {
     localStorage.setItem('kanban_tasks', JSON.stringify(tasks));
 }
@@ -31,6 +29,9 @@ const countTodo = document.getElementById('count-todo');
 const countInProgress = document.getElementById('count-in-progress');
 const countDone = document.getElementById('count-done');
 
+const searchInput = document.getElementById('search-input');
+const priorityFilter = document.getElementById('priority-filter');
+
 // Modal Elementləri
 const modal = document.getElementById('task-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -42,7 +43,7 @@ const taskPriorityInput = document.getElementById('task-priority-input');
 const openModalBtn = document.getElementById('open-modal-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 
-// Modal funksiyaları
+// Modal Funksiyaları
 function openModal(isEdit = false, task = null) {
     modal.classList.add('modal--open');
     if (isEdit && task) {
@@ -70,7 +71,7 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
 
-// Form göndərilməsi 
+// Form göndərilməsi
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -99,7 +100,7 @@ taskForm.addEventListener('submit', (e) => {
         tasks.push(newTask);
     }
 
-    saveTasksToLocalStorage(); 
+    saveTasksToLocalStorage();
     renderTasks();
     closeModal();
 });
@@ -108,7 +109,7 @@ taskForm.addEventListener('submit', (e) => {
 function deleteTask(id) {
     if (confirm('Bu tapşırığı silmək istədiyinizdən əminsiniz?')) {
         tasks = tasks.filter(task => task.id !== id);
-        saveTasksToLocalStorage(); 
+        saveTasksToLocalStorage();
         renderTasks();
     }
 }
@@ -139,10 +140,25 @@ function setupDragAndDrop() {
 
             if (draggedTask && draggedTask.status !== status) {
                 draggedTask.status = status;
-                saveTasksToLocalStorage(); 
+                saveTasksToLocalStorage();
                 renderTasks();
             }
         });
+    });
+}
+
+//Filterleme
+function getFilteredTasks() {
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedPriority = priorityFilter ? priorityFilter.value : 'all';
+
+    return tasks.filter(task => {
+        const matchesSearch = task.title.toLowerCase().includes(query) || 
+                              (task.description && task.description.toLowerCase().includes(query));
+        
+        const matchesPriority = selectedPriority === 'all' || task.priority === selectedPriority;
+
+        return matchesSearch && matchesPriority;
     });
 }
 
@@ -156,7 +172,9 @@ function renderTasks() {
     let inProgressCount = 0;
     let doneCount = 0;
 
-    tasks.forEach(task => {
+    const filteredTasks = getFilteredTasks();
+
+    filteredTasks.forEach(task => {
         const card = createTaskCard(task);
 
         if (task.status === 'todo') {
@@ -228,6 +246,10 @@ function checkEmptyColumn(container, count) {
         container.innerHTML = `<div class="empty-msg">Burada tapşırıq yoxdur</div>`;
     }
 }
+
+// Event Listeners for Search & Filter
+if (searchInput) searchInput.addEventListener('input', renderTasks);
+if (priorityFilter) priorityFilter.addEventListener('change', renderTasks);
 
 document.addEventListener('DOMContentLoaded', () => {
     renderTasks();
