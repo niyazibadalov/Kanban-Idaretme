@@ -1,6 +1,6 @@
-// Checkpoint 1: JS Massivindən Tapşırıqların Dinamik Render olunması
 
-// İlkin test məlumatları (JS massivi)
+
+// JS massivi
 let tasks = [
     {
         id: "1",
@@ -27,9 +27,7 @@ const countTodo = document.getElementById('count-todo');
 const countInProgress = document.getElementById('count-in-progress');
 const countDone = document.getElementById('count-done');
 
-// Massivdəki məlumatları ekrana çıxaran funksiya
 function renderTasks() {
-    // Sütunları təmizləyirik
     tasksTodo.innerHTML = '';
     tasksInProgress.innerHTML = '';
     tasksDone.innerHTML = '';
@@ -53,7 +51,7 @@ function renderTasks() {
         }
     });
 
-    // Boş sütunlar üçün mesaj göstəririk
+
     checkEmptyColumn(tasksTodo, todoCount);
     checkEmptyColumn(tasksInProgress, inProgressCount);
     checkEmptyColumn(tasksDone, doneCount);
@@ -93,5 +91,4 @@ function checkEmptyColumn(container, count) {
     }
 }
 
-// Səhifə açılan kimi render et
 document.addEventListener('DOMContentLoaded', renderTasks);

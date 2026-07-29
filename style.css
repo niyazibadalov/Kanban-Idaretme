@@ -75,7 +75,7 @@ body {
     color: white;
 }
 
-/* Board Layout */
+
 .board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
