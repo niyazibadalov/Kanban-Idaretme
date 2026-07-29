@@ -20,6 +20,14 @@ function saveTasksToLocalStorage() {
     localStorage.setItem('kanban_tasks', JSON.stringify(tasks));
 }
 
+// XSS Sanitization (Mətnləri HTML-ə zərər vura bilməyəcək hala gətirir)
+function sanitizeInput(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // DOM Elementləri
 const tasksTodo = document.getElementById('tasks-todo');
 const tasksInProgress = document.getElementById('tasks-in-progress');
@@ -43,7 +51,6 @@ const taskPriorityInput = document.getElementById('task-priority-input');
 const openModalBtn = document.getElementById('open-modal-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 
-// Modal Funksiyaları
 function openModal(isEdit = false, task = null) {
     modal.classList.add('modal--open');
     if (isEdit && task) {
@@ -71,29 +78,39 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
 
-// Form göndərilməsi
+// Form Göndərilməsi 
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const title = taskTitleInput.value.trim();
-    const description = taskDescInput.value.trim();
+    const rawTitle = taskTitleInput.value.trim();
+    const rawDescription = taskDescInput.value.trim();
     const priority = taskPriorityInput.value;
     const id = taskIdInput.value;
 
-    if (!title) return;
+    if (!rawTitle) return;
+
+    //  Təkrarlanan tapşırığın qarşısını almaq 
+    const isDuplicate = tasks.some(task => 
+        task.title.toLowerCase() === rawTitle.toLowerCase() && task.id !== id
+    );
+
+    if (isDuplicate) {
+        alert('Bu adda tapşırıq artıq mövcuddur! Lütfən fərqli başlıq yazın.');
+        return;
+    }
 
     if (id) {
         const task = tasks.find(t => t.id === id);
         if (task) {
-            task.title = title;
-            task.description = description;
+            task.title = rawTitle;
+            task.description = rawDescription;
             task.priority = priority;
         }
     } else {
         const newTask = {
             id: Date.now().toString(),
-            title: title,
-            description: description,
+            title: rawTitle,
+            description: rawDescription,
             priority: priority,
             status: 'todo'
         };
@@ -105,7 +122,6 @@ taskForm.addEventListener('submit', (e) => {
     closeModal();
 });
 
-// Tapşırıq Silmə
 function deleteTask(id) {
     if (confirm('Bu tapşırığı silmək istədiyinizdən əminsiniz?')) {
         tasks = tasks.filter(task => task.id !== id);
@@ -114,7 +130,6 @@ function deleteTask(id) {
     }
 }
 
-// Drag and Drop
 function setupDragAndDrop() {
     const columns = document.querySelectorAll('.column');
 
@@ -147,7 +162,6 @@ function setupDragAndDrop() {
     });
 }
 
-//Filterleme
 function getFilteredTasks() {
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const selectedPriority = priorityFilter ? priorityFilter.value : 'all';
@@ -162,7 +176,6 @@ function getFilteredTasks() {
     });
 }
 
-// Render Funksiyası
 function renderTasks() {
     tasksTodo.innerHTML = '';
     tasksInProgress.innerHTML = '';
@@ -198,7 +211,7 @@ function renderTasks() {
     countDone.textContent = doneCount;
 }
 
-// Kart yaradılması
+//  Təhlükəsiz Kart Yaradılması (XSS-dən təmizlənmiş)
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = 'task-card';
@@ -211,12 +224,15 @@ function createTaskCard(task) {
         high: 'Yüksək'
     };
 
+    const safeTitle = sanitizeInput(task.title);
+    const safeDesc = sanitizeInput(task.description);
+
     card.innerHTML = `
         <span class="task-card__badge task-card__badge--${task.priority}">
             ${priorityText[task.priority] || task.priority}
         </span>
-        <h3 class="task-card__title">${task.title}</h3>
-        ${task.description ? `<p class="task-card__desc">${task.description}</p>` : ''}
+        <h3 class="task-card__title">${safeTitle}</h3>
+        ${safeDesc ? `<p class="task-card__desc">${safeDesc}</p>` : ''}
         <div class="task-card__actions">
             <button class="action-btn action-btn--edit" title="Redaktə et">✏️</button>
             <button class="action-btn action-btn--delete" title="Sil">🗑️</button>
@@ -247,7 +263,6 @@ function checkEmptyColumn(container, count) {
     }
 }
 
-// Event Listeners for Search & Filter
 if (searchInput) searchInput.addEventListener('input', renderTasks);
 if (priorityFilter) priorityFilter.addEventListener('change', renderTasks);
 
