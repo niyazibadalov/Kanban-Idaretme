@@ -1,4 +1,3 @@
-// Checkpoint 1 & 2: JS Massivi, Modal, Əlavə Et / Redaktə Et / Sil
 
 let tasks = [
     {
@@ -37,7 +36,7 @@ const taskPriorityInput = document.getElementById('task-priority-input');
 const openModalBtn = document.getElementById('open-modal-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 
-// Modal açmaq/bağlamaq funksiyaları
+// Modal funksiyaları
 function openModal(isEdit = false, task = null) {
     modal.classList.add('modal--open');
     if (isEdit && task) {
@@ -59,14 +58,13 @@ function closeModal() {
     taskIdInput.value = '';
 }
 
-// Event Listeners for Modal
 openModalBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
 
-// Form Göndərilməsi (Əlavə etmə / Redaktə etmə)
+// Form göndərilməsi
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -78,7 +76,6 @@ taskForm.addEventListener('submit', (e) => {
     if (!title) return;
 
     if (id) {
-        // Redaktə rejimi
         const task = tasks.find(t => t.id === id);
         if (task) {
             task.title = title;
@@ -86,13 +83,12 @@ taskForm.addEventListener('submit', (e) => {
             task.priority = priority;
         }
     } else {
-        // Yeni tapşırıq əlavə etmə
         const newTask = {
             id: Date.now().toString(),
             title: title,
             description: description,
             priority: priority,
-            status: 'todo' // Yeni tapşırıqlar standart olaraq "Gözləmədə" sütununa düşür
+            status: 'todo'
         };
         tasks.push(newTask);
     }
@@ -101,12 +97,44 @@ taskForm.addEventListener('submit', (e) => {
     closeModal();
 });
 
-// Tapşırıq Silmə Funksiyası
+// Tapşırıq Silmə
 function deleteTask(id) {
     if (confirm('Bu tapşırığı silmək istədiyinizdən əminsiniz?')) {
         tasks = tasks.filter(task => task.id !== id);
         renderTasks();
     }
+}
+
+// Drag and Drop
+function setupDragAndDrop() {
+    const columns = document.querySelectorAll('.column');
+
+    columns.forEach(column => {
+        const tasksContainer = column.querySelector('.column__tasks');
+        const status = column.dataset.status;
+
+        tasksContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            tasksContainer.classList.add('drag-over');
+        });
+
+        tasksContainer.addEventListener('dragleave', () => {
+            tasksContainer.classList.remove('drag-over');
+        });
+
+        tasksContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            tasksContainer.classList.remove('drag-over');
+
+            const taskId = e.dataTransfer.getData('text/plain');
+            const draggedTask = tasks.find(t => t.id === taskId);
+
+            if (draggedTask && draggedTask.status !== status) {
+                draggedTask.status = status;
+                renderTasks();
+            }
+        });
+    });
 }
 
 // Render Funksiyası
@@ -143,12 +171,12 @@ function renderTasks() {
     countDone.textContent = doneCount;
 }
 
-// Kart yaradılması
+// Kart yaradılması və Drag
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = 'task-card';
     card.dataset.id = task.id;
-
+    card.setAttribute('draggable', 'true'); 
     const priorityText = {
         low: 'Aşağı',
         medium: 'Orta',
@@ -167,7 +195,16 @@ function createTaskCard(task) {
         </div>
     `;
 
-    // Redaktə və Sil düymələrinə event əlavə etmək
+    // Kart Drag Start & End hadisələri
+    card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', task.id);
+        card.classList.add('dragging');
+    });
+
+    card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+    });
+
     const editBtn = card.querySelector('.action-btn--edit');
     const deleteBtn = card.querySelector('.action-btn--delete');
 
@@ -183,4 +220,7 @@ function checkEmptyColumn(container, count) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', renderTasks);
+document.addEventListener('DOMContentLoaded', () => {
+    renderTasks();
+    setupDragAndDrop();
+});
